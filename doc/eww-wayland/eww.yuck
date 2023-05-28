@@ -1,0 +1,320 @@
+;;;;;;;;;;;;;;;;;;
+;; custom commands
+;;;;;;;;;;;;;;;;;;
+
+(defvar launcher_cmd "rofi_run.sh")
+(defvar network_cmd  "xfce4-terminal -e nmtui &")
+(defvar volume_cmd   "pavucontrol &")
+(defvar suspend_cmd  "eww update suspend_open=false &&
+                      eww close suspend-confirm &&
+                      systemctl suspend && swaylock -f -c 000000")
+(defvar reboot_cmd   "systemctl reboot")
+(defvar logout_cmd   "swaymsg exit")
+(defvar lock_cmd     "eww update powermenu_reveal=false && swaylock -f -c 000000")
+(defvar poweroff_cmd "systemctl poweroff")
+
+
+;;;;;;;;;;;;;
+;; bar layout 
+;;;;;;;;;;;;;
+
+;; bar widget
+(defwidget bar-widget []
+  (centerbox :orientation "v"
+    (box :class "start"
+         :valign "start"
+      (start))
+    (box :valign "center"
+         :class "center"
+      (center))
+    (box :valign "end"
+         :class "end" 
+      (end))))
+
+;; top layout
+(defwidget start []
+  (box :orientation "v"
+       :space-evenly false
+       :spacing "5"
+    (launcher)(workspaces)))
+
+;; middle layout
+(defwidget center []
+  (empty))
+
+;; bottom layout
+(defwidget end []
+  (box :orientation "v"
+       :space-evenly false
+       :spacing "5"
+    (systemtray)(clock)(powermenu)))
+
+
+;;;;;;;;;;;;;;
+;; top widgets
+;;;;;;;;;;;;;;
+
+;; launcher
+(defwidget launcher []
+  (button :class "launcher-icon"
+          :onclick launcher_cmd  ""))
+
+;; workspaces
+(defwidget workspaces []
+  (box :class "metric"
+    (literal :content goober)))
+
+(deflisten goober "goober -wm sway")
+
+
+;;;;;;;;;;;;;;;;;
+;; middle widgets
+;;;;;;;;;;;;;;;;;
+
+;; empty widget
+(defwidget empty []
+  (box :orientation "v" ))
+
+
+;;;;;;;;;;;;;;;;;
+;; bottom widgets
+;;;;;;;;;;;;;;;;;
+
+;; systemtray
+(defwidget systemtray []
+  (box :class "metric"
+       :orientation "v"
+       :space-evenly false
+       :spacing "5"
+    (battery)(network)(brightness)(volume)))
+
+;; battery
+(defwidget battery []
+  (label :class "battery-icon"
+         :text {battery_capacity == "30" ? "" : ""}
+         :tooltip "Battery: ${battery_capacity}%"))
+
+(defpoll battery_capacity :interval "1s" "cat /sys/class/power_supply/BAT0/capacity")
+
+;; network 
+(defwidget network []
+  (button :class "network-icon"
+          :onclick network_cmd
+          :tooltip wifi_name
+          {wifi_icon == "down" ? "睊" : "直"}))
+
+(defpoll wifi_icon :interval "1s" "cat /sys/class/net/w*/operstate")
+(defpoll wifi_name :interval "1s" "nmcli | grep '^wlp' | sed 's/\ connected\ to\ /Connected to /g' | cut -d ':' -f2")
+
+;; brightness
+(defwidget brightness []
+  (eventbox :onhover "eww update brightness_reveal=true"
+            :onhoverlost "eww update brightness_reveal=false"
+    (box :orientation "v"
+         :space-evenly false
+      (revealer :transition "slideup"
+                :reveal brightness_reveal
+        (scale :class "brightness-slider"
+               :value current_brightness
+               :tooltip "Brightness: ${current_brightness}%"
+               :onchange "brightnessctl set {}%"
+               :orientation "v"
+               :flipped true
+               :max 101
+               :min 0))
+          (label :class "brightness-icon"
+                 :text ""))))
+
+(defpoll current_brightness :interval "1s" "brightnessctl -m -d intel_backlight | awk -F, '{print substr($4, 0, length($4)-1)}' | tr -d '%'")
+(defvar brightness_reveal false)
+
+;; volume
+(defwidget volume []
+  (eventbox :onhover "eww update volume_reveal=true"
+            :onhoverlost "eww update volume_reveal=false"
+    (box :orientation "v"
+         :space-evenly false
+      (revealer :transition "slideup"
+                :reveal volume_reveal
+        (scale :class "volume-slider"
+               :value current_volume
+               :tooltip "Volume: ${current_volume}%"
+               :onchange "pamixer --set-volume {}"
+               :orientation "v"
+               :flipped true
+               :max 101
+               :min 0))
+          (button :class "volume-icon"
+                  :onclick volume_cmd "墳"))))
+
+(defpoll current_volume :interval "1s" "pamixer --get-volume")
+(defvar volume_reveal false)
+
+;; clock
+(defwidget clock []
+  (box :class "metric"
+    (box :orientation "v"
+         :halign "center"
+      (button :class "hour"
+              :onclick {calendar_open ? "eww update calendar_open=false && eww close calendar" : "eww update calendar_open=true && eww open calendar"} hour)
+      (button :class "minute"
+              :onclick {calendar_open ? "eww update calendar_open=false && eww close calendar" : "eww update calendar_open=true && eww open calendar"} minute))))
+
+(defpoll hour :interval "1s" "date +%H")
+(defpoll minute :interval "1s" "date +%M")
+(defvar calendar_open false)
+
+;; calendar widget
+(defwidget calendar-widget []
+  (box :class "calendar-padding"
+    (calendar :day day
+              :month month
+              :year year)))
+
+(defpoll day :interval "10h"
+    "date +%d")
+(defpoll month :interval "10h"
+    "date +%m")
+(defpoll year :interval "10h"
+    "date +%Y")
+
+;; powermenu
+(defwidget powermenu []
+  (eventbox :onhover "eww update powermenu_reveal=true"
+            :onhoverlost "eww update powermenu_reveal=false"
+    (box :orientation "v"
+         :space-evenly "false"
+         :spacing "5"
+         :vexpand "false"
+         :class "powermenu"
+        (revealer :transition "slideup"
+                  :reveal powermenu_reveal
+          (box :orientation "v"
+               :space-evenly "false"
+               :spacing "5"
+            (button :class "suspend-icon"
+                    :tooltip "Suspend"
+                    :onclick {suspend_open ? "eww update suspend_open=false && eww close suspend-confirm" : "eww update suspend_open=true && eww open suspend-confirm"} "鈴" )
+            (button :class "reboot-icon"
+                    :tooltip "Reboot"
+                    :onclick {reboot_open ? "eww update reboot_open=false && eww close reboot-confirm" : "eww update reboot_open=true && eww open reboot-confirm"} "凌")
+            (button :class "logout-icon"
+                    :tooltip "Logout"
+                    :onclick {logout_open ? "eww update logout_open=false && eww close logout-confirm" : "eww update logout_open=true && eww open logout-confirm"} "﫼")
+            (button :class "lock-icon"
+                    :tooltip "Lock"
+                    :onclick lock_cmd "")))
+          (button :class "poweroff-icon"
+                  :tooltip "Poweroff"
+                  :onclick {poweroff_open ? "eww update poweroff_open=false && eww close poweroff-confirm" : "eww update poweroff_open=true && eww open poweroff-confirm"} "襤"))))
+(defvar powermenu_reveal false)
+
+;; suspend confirmation widget
+(defwidget suspend-widget []
+(box :orientation "v"
+     :space-evenly "false"
+     :spacing "5"
+     :vexpand "false"
+     :class "confirm-padding"
+     "Suspend this computer?"
+  (box :class "confirm-padding"
+       :spacing "25"
+    (button :class "metric"
+            :onclick {suspend_open ? "eww update suspend_open=false && eww close suspend-confirm" : "eww update suspend_open=true && eww open suspend-confirm"} "CANCEL")
+    (button :class "suspend-yes"
+            :onclick suspend_cmd "YES"))))
+
+(defvar suspend_open false)
+
+;; reboot confirmation widget
+(defwidget reboot-widget []
+(box :orientation "v"
+     :space-evenly "false"
+     :spacing "5"
+     :vexpand "false"
+     :class "confirm-padding"
+     "Reboot this computer?"
+  (box :class "confirm-padding"
+       :spacing "25"
+    (button :class "metric"
+            :onclick {reboot_open ? "eww update reboot_open=false && eww close reboot-confirm" : "eww update reboot_open=true && eww open reboot-confirm"} "CANCEL")
+    (button :class "reboot-yes"
+            :onclick reboot_cmd "YES"))))
+
+(defvar reboot_open false)
+
+;; logout confirmation widget
+(defwidget logout-widget []
+(box :orientation "v"
+     :space-evenly "false"
+     :spacing "5"
+     :vexpand "false"
+     :class "confirm-padding"
+     "Logout of this computer?"
+  (box :class "confirm-padding"
+       :spacing "25"
+    (button :class "metric"
+            :onclick {logout_open ? "eww update logout_open=false && eww close logout-confirm" : "eww update logout_open=true && eww open logout-confirm"} "CANCEL")
+    (button :class "logout-yes"
+            :onclick logout_cmd "YES"))))
+
+(defvar logout_open false)
+
+;; poweroff confirmation widget
+(defwidget poweroff-widget []
+(box :orientation "v"
+     :space-evenly "false"
+     :spacing "5"
+     :vexpand "false"
+     :class "confirm-padding"
+     "Poweroff this computer?"
+  (box :class "confirm-padding"
+       :spacing "25"
+    (button :class "metric"
+            :onclick {poweroff_open ? "eww update poweroff_open=false && eww close poweroff-confirm" : "eww update poweroff_open=true && eww open poweroff-confirm"} "CANCEL")
+    (button :class "poweroff-yes"
+            :onclick poweroff_cmd "YES"))))
+
+(defvar poweroff_open false)
+
+;;;;;;;;;;
+;; windows
+;;;;;;;;;;
+
+;; bar
+(defwindow bar
+  :monitor 0
+  :exclusive true 
+  :geometry (geometry :height "100%" :width "48px" :anchor "left center")
+  :stacking "fg"
+  (bar-widget))
+
+;; calendar
+(defwindow calendar
+  :monitor 0
+  :geometry (geometry :x "77px" :y "65%")
+  (calendar-widget))
+
+;; suspend confirmation
+(defwindow suspend-confirm
+  :monitor 0
+  :geometry (geometry :height "120px" :width "480px" :anchor "center")
+  (suspend-widget))
+
+;; reboot confirmation
+(defwindow reboot-confirm
+  :monitor 0
+  :geometry (geometry :height "120px" :width "480px" :anchor "center")
+  (reboot-widget))
+
+;; logout confirmation
+(defwindow logout-confirm
+  :monitor 0
+  :geometry (geometry :height "120px" :width "480px" :anchor "center")
+  (logout-widget))
+
+;; poweroff confirmation
+(defwindow poweroff-confirm
+  :monitor 0
+  :geometry (geometry :height "120px" :width "480px" :anchor "center")
+  (poweroff-widget))

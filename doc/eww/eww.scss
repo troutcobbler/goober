@@ -1,0 +1,209 @@
+// colors
+$foreground: #a7a7a7;
+$background: #202020;
+$color0:     #2d2d2d;
+$color8:     #605f61;
+$color1:     #9d5b61;
+$color9:     #9d5b61;
+$color2:     #838d69;
+$color10:    #838b69;
+$color3:     #b38d6a;
+$color11:    #b38d6a;
+$color4:     #606d84;
+$color12:    #606d84;
+$color5:     #766577;
+$color13:    #766577;
+$color6:     #808fa0;
+$color14:    #808fa0;
+$color7:     #9c9a9a;
+$color15:    #9c9a9a;
+
+
+// widgets
+* {
+  all: unset;
+}
+
+
+// windows
+window {
+  background: $background;
+  color: $foreground;
+  font-size: 20px;
+
+  & > * {
+    margin: 4px;
+  }
+}
+
+
+// top
+.start {
+  margin-top: 5px;
+}
+
+
+// bottom
+.end {
+  margin-bottom: 5px;
+}
+
+
+// bubbles
+.metric {
+  background-color: $color0;
+  padding: 5px 2px;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+
+// launcher
+.launcher-icon {
+  color: $color6
+}
+
+
+// workspaces
+.workspaces {
+  button {
+    background: none;
+    margin: 3px;
+    padding-left: 1px;
+    &.inactive {
+      color: $color8;
+    }
+    &.active {
+      color: $foreground;
+    }
+    &.occupied {
+    }
+    &.empty {
+    }
+  }
+}
+
+
+// status icons
+.battery-icon{
+  color: $color4;
+}
+.network-icon{
+  color: $color5;
+}
+.brightness-icon{
+  color: $color3;
+}
+.volume-icon{
+  color: $color2;
+}
+
+
+// sliders
+scale trough {
+  all: unset;
+  background-color: $background;
+  border-radius: 5px;
+  min-height: 80px;
+  min-width: 10px;
+  margin: .3rem 0 .3rem 0;
+}
+
+.brightness-slider trough highlight {
+  background-color: $color3;
+  border-radius: 5px;
+}
+
+.volume-slider trough highlight {
+  background-color: $color2;
+  border-radius: 5px;
+}
+
+// calendar
+.calendar-padding {
+  padding: 1rem 1rem .2rem;
+}
+
+calendar {
+  padding: .8rem .25rem 0rem;
+  margin-left: 10px;
+}
+
+calendar:selected {
+  color: $color1;
+}
+
+calendar.header {
+  color: $color1;
+}
+
+calendar.button {
+  color: $color6;
+}
+
+calendar.highlight {
+  color: $color6;
+  padding:10rem;
+}
+
+calendar:indeterminate {
+  color: $color8;
+}
+
+// powermenu
+.poweroff-icon{
+  color: $color1;
+}
+
+.suspend-icon{
+  color: $color2;
+  margin-top: 5px;
+}
+
+.reboot-icon{
+  color: $color3
+}
+
+.logout-icon{
+  color: $color5;
+}
+
+.lock-icon{
+  color: $color4;
+}
+
+.confirm-padding {
+  padding: 1rem 1rem .2rem;
+}
+
+.suspend-yes {
+  color: $color2;
+  background-color: $color0;
+  padding: 5px 2px;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+.reboot-yes {
+  color: $color3;
+  background-color: $color0;
+  padding: 5px 2px;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+.logout-yes {
+  color: $color5;
+  background-color: $color0;
+  padding: 5px 2px;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+.poweroff-yes {
+  color: $color1;
+  background-color: $color0;
+  padding: 5px 2px;
+  border-radius: 5px;
+  margin-top: 5px;
+}
