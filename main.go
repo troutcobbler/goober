@@ -49,6 +49,9 @@ func main() {
 	} else if *wm == "i3" {
 		src.WindowManager = *wm
 		src.I3sub()
+	} else if *wm == "hyprland" {
+		src.WindowManager = *wm
+		src.Hyprsub()
 	} else {
 		fmt.Println("no window manager specified")
 		fmt.Println("please try again with: goober -wm DESIRED_WM")
