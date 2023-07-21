@@ -39,6 +39,8 @@ func Readline() {
 			name = tag
 		} else if WindowManager == "i3" {
 			command = "i3-msg workspace"
+		} else if WindowManager == "hyprland" {
+			command = "hyprctl dispatch workspace"
 		}
 
 		unoccupied, err := regexp.MatchString(`^U`, v)
