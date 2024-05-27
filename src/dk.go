@@ -2,14 +2,23 @@ package src
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os/exec"
-	"regexp"
 )
+
+type Dk struct {
+	Workspaces []struct {
+		Name    string
+		Number  int
+		Focused bool
+		Active  bool
+	}
+}
 
 func Dksub() {
 
-	cmd := exec.Command("dkcmd", "status", "type=ws")
+	cmd := exec.Command("dkcmd", "status")
 
 	out, err := cmd.StdoutPipe()
 	if err != nil {
@@ -25,20 +34,36 @@ func Dksub() {
 
 		payload := listener.Text()
 
-		// change lettering to goobers default UFO
-		re := regexp.MustCompile(`i`)
-		u := re.ReplaceAllString(payload, "U")
+		var dk Dk
+		err := json.Unmarshal([]byte(payload), &dk)
+		if err != nil {
+			panic(err)
+		}
 
-		re = regexp.MustCompile(`I`)
-		f := re.ReplaceAllString(u, "F")
+		Line = ""
 
-		re = regexp.MustCompile(`A`)
-		f = re.ReplaceAllString(f, "F")
+		for _, status := range dk.Workspaces {
 
-		re = regexp.MustCompile(`a`)
-		o := re.ReplaceAllString(f, "O")
+			if status.Number == NumWorkspaces {
+				if status.Focused {
+					Line = Line + "F" + status.Name
+				} else if status.Active {
+					Line = Line + "O" + status.Name
+				} else {
+					Line = Line + "U" + status.Name
+				}
+			} else {
+				if status.Focused {
+					Line = Line + "F" + status.Name + ":"
+				} else if status.Active {
+					Line = Line + "O" + status.Name + ":"
+				} else {
+					Line = Line + "U" + status.Name + ":"
+				}
+			}
 
-		Line = o
+		}
+
 		Readline()
 	}
 
