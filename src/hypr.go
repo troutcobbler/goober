@@ -82,7 +82,7 @@ func Hyprsub() {
 	Hyprws()
 	Readline()
 
-	conn, _ := net.Dial("unix", "/tmp/hypr/"+os.Getenv("HYPRLAND_INSTANCE_SIGNATURE")+"/.socket2.sock")
+	conn, _ := net.Dial("unix", os.Getenv("XDG_RUNTIME_DIR")+"/hypr/"+os.Getenv("HYPRLAND_INSTANCE_SIGNATURE")+"/.socket2.sock")
 
 	scanner := bufio.NewScanner(conn)
 	for {

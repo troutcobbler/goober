@@ -1,3 +1,9 @@
+goober (0.1.5) pecos; urgency=medium
+
+  * Bumped version to support hyprland 0.41.2 socket location
+
+ -- Will Elliott <troutcobbler@gmail.com>  Sat, 27 Jul 2024 18:46:58 -0600
+
 goober (0.1.4) pecos; urgency=medium
 
   * Bumped version to support dk 2.2 with JSON 
